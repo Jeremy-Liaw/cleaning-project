@@ -183,16 +183,6 @@
     transition:opacity .1s ease, transform .12s ease;
   }
   .check.checked svg{opacity:1;transform:scale(1);}
-  .task-del{
-    flex:none;
-    border:none;background:none;
-    color:var(--line);
-    font-size:15px;
-    cursor:pointer;
-    padding:4px;
-  }
-  .task-del:hover{color:#b23b3b;}
-
   .add-row{
     display:flex;
     gap:8px;
@@ -283,18 +273,83 @@ const BOOK_COLOR = {
   '曦華書院':'var(--book-dawn)',
   '靛織書院':'var(--book-indigo)'
 };
-// 樓層 -> 負責書院（先隨便分配，之後可再調整）
+// 樓層 -> 負責書院
 const FLOOR_BOOKS = {
-  '1F': ['馭風書院','矽晶書院'],
-  '2F': ['曦華書院'],
-  '3F': ['靛織書院']
+  '1F': ['曦華書院','靛織書院'],
+  '2F': ['馭風書院'],
+  '3F': ['矽晶書院']
 };
 const FLOOR_ORDER = ['1F','2F','3F'];
 
 const DEFAULT_TASKS = {
-  '1F': ['川堂', '大廳穿堂', '教師辦公室', '男生洗手間', '女生洗手間', '中央樓梯間'],
-  '2F': ['走廊', '教室走道', '洗手間', '樓梯間'],
-  '3F': ['走廊', '教室走道', '洗手間', '樓梯間']
+  '1F': [
+    '警衛室附近地板',
+    '花圃維護',
+    '走廊地板（靠共伴樞）',
+    '花園',
+    '火塘－地板',
+    '火塘－桌子',
+    '創客空間－地板',
+    '創客空間－窗戶及桌椅',
+    '性別友善廁所－洗手台',
+    '性別友善廁所－馬桶',
+    '性別友善廁所－地板',
+    '無障礙廁所＋廁所走廊－地板',
+    '無障礙廁所＋廁所走廊－刷馬桶、小便斗',
+    '垃圾儲藏室（分類垃圾）',
+    '一樓大廳－花圃維護',
+    '一樓大廳－地板簡單清潔',
+    '泮林－窗戶',
+    '泮林－櫃子',
+    '泮林－地板',
+    '體育器材室（整理器材）',
+    '一樓走廊－第一部分（掃拖）',
+    '一樓走廊－第二部分（掃拖）',
+    '一樓走廊－第三部分（掃拖）',
+    '樓梯－共伴樞旁',
+    '樓梯－廁所旁',
+    '樓梯－通學樓梯（到 2F 空地）'
+  ],
+  '2F': [
+    '教研樞旁花圃',
+    '教研樞旁空地地板維護',
+    '一般教室（一）',
+    '一般教室（二）',
+    '廁所－地板',
+    '廁所－男廁刷馬桶等',
+    '廁所－女廁刷馬桶等',
+    '教研樞旁廁所－男廁',
+    '教研樞旁廁所－女廁',
+    '走廊＋無障礙廁所',
+    '議策樞維護',
+    '教研樞前空地',
+    '通往一樓校園鏤空處（欄杆＋地板）',
+    '向陽階梯附近地板一',
+    '向陽階梯附近地板二',
+    '樓梯－向陽階梯＋後方花圃維護（到 2F）',
+    '樓梯－廁所樓梯（靠近一般教室）',
+    '樓梯－廁所樓梯（靠近教研樞）'
+  ],
+  '3F': [
+    '淬維護',
+    '一般教室（一）',
+    '一般教室（二）',
+    '廁所－地板',
+    '廁所－男廁刷馬桶等',
+    '廁所－女廁刷馬桶等',
+    '花圃旁廁所－男廁',
+    '花圃旁廁所－女廁',
+    '走廊＋無障礙廁所',
+    '地科／生物教室維護',
+    'PBL 研創維護',
+    '迴響維護',
+    '走廊－第一部分（掃加拖）',
+    '走廊－第二部分（掃加拖）',
+    '走廊－第三部分（掃加拖）',
+    '走廊－第四部分（掃加拖）',
+    '走廊－第五部分（掃加拖）',
+    '花圃空間'
+  ]
 };
 
 // 全校 82 人範例名冊（依書院分組，之後可替換成真實名單）
@@ -321,6 +376,7 @@ const DKEY = dateKey(now);
 let tasksData = null;      // {floor: [taskName,...]}
 let inspectorData = null;  // {book: name}
 let checklistData = null;  // {"floor||task": true}
+const openFloors = { '1F': true, '2F': false, '3F': false };
 
 async function loadAll(){
   tasksData = await loadJSON('tasks', DEFAULT_TASKS);
@@ -376,7 +432,7 @@ function render(){
     const pct = tasks.length ? Math.round(doneCount/tasks.length*100) : 0;
 
     const card = document.createElement('div');
-    card.className = 'floor' + (idx===0 ? ' open' : '');
+    card.className = 'floor' + (openFloors[floor] ? ' open' : '');
 
     const tagsHtml = books.map(b=>
       `<span class="book-tag" style="background:${BOOK_COLOR[b]}">
@@ -401,17 +457,13 @@ function render(){
               <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="label">${t}</div>
-            <button class="task-del" data-floor="${floor}" data-task="${t}" title="刪除項目">✕</button>
           </div>`;
         }).join('')}
-        <div class="add-row">
-          <input type="text" placeholder="新增打掃項目…" data-floor-input="${floor}">
-          <button data-floor-add="${floor}">新增</button>
-        </div>
       </div>
     `;
 
     card.querySelector('.floor-head').addEventListener('click', ()=>{
+      openFloors[floor] = !openFloors[floor];
       card.classList.toggle('open');
     });
 
@@ -430,44 +482,6 @@ function render(){
     });
   });
 
-  // delete task
-  floorsEl.querySelectorAll('.task-del').forEach(btn=>{
-    btn.addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      const floor = btn.dataset.floor, task = btn.dataset.task;
-      tasksData[floor] = (tasksData[floor]||[]).filter(t=>t!==task);
-      delete checklistData[taskId(floor,task)];
-      await saveJSON('tasks', tasksData);
-      await saveJSON('checklist:'+DKEY, checklistData);
-      render();
-    });
-  });
-
-  // add task
-  floorsEl.querySelectorAll('[data-floor-add]').forEach(btn=>{
-    const floor = btn.dataset.floorAdd;
-    const doAdd = async ()=>{
-      const input = floorsEl.querySelector(`[data-floor-input="${floor}"]`);
-      const val = input.value.trim();
-      if(!val) return;
-      tasksData[floor] = tasksData[floor] || [];
-      if(!tasksData[floor].includes(val)) tasksData[floor].push(val);
-      await saveJSON('tasks', tasksData);
-      render();
-    };
-    btn.addEventListener('click', (e)=>{ e.stopPropagation(); doAdd(); });
-  });
-  floorsEl.querySelectorAll('[data-floor-input]').forEach(input=>{
-    input.addEventListener('keydown', (e)=>{
-      if(e.key === 'Enter'){
-        e.preventDefault();
-        floorsEl.querySelector(`[data-floor-add="${input.dataset.floorInput}"]`).click();
-      }
-    });
-    input.addEventListener('click', e=>e.stopPropagation());
-  });
-
-  // keep newly-opened state after re-render: re-open any floor whose head was open before
 }
 
 document.getElementById('reroll-btn').addEventListener('click', async ()=>{
