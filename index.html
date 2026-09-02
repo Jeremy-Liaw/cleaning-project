@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>打掃工作分配表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f2f1ec;
+    --ink:#22241f;
+    --ink-soft:#5c5e57;
+    --line:#d8d6cd;
+    --card:#fbfaf7;
+    --book-wind:#3f7ea6;
+    --book-si:#3e8e73;
+    --book-dawn:#d97e3d;
+    --book-indigo:#4b4e93;
+    --good:#2f8f5b;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .board{
+    max-width:640px;
+    margin:0 auto;
+    padding:28px 18px 64px;
+  }
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    border-bottom:3px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:6px;
+  }
+  .masthead h1{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:34px;
+    letter-spacing:0.3px;
+    margin:0;
+    line-height:1;
+  }
+  .masthead .date{
+    font-size:13px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
+  .roster-strip{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin:18px 0 30px;
+  }
+  .roster-chip{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:6px 10px 6px 8px;
+    font-size:13px;
+  }
+  .swatch{
+    width:9px;height:9px;border-radius:2px;flex:none;
+  }
+  .roster-chip b{font-weight:600;}
+  .roster-chip .who{color:var(--ink-soft);}
+
+  .floor{
+    border:1px solid var(--line);
+    background:var(--card);
+    border-radius:4px;
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .floor-head{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    padding:14px 16px;
+    border-bottom:1px solid var(--line);
+    cursor:pointer;
+    user-select:none;
+  }
+  .floor-num{
+    font-family:'Barlow Condensed',sans-serif;
+    font-weight:700;
+    font-size:40px;
+    line-height:1;
+    width:56px;
+    flex:none;
+    color:var(--ink);
+  }
+  .floor-meta{flex:1;min-width:0;}
+  .floor-meta .tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;}
+  .book-tag{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    font-size:12px;
+    padding:2px 8px 2px 6px;
+    border-radius:99px;
+    color:#fff;
+  }
+  .book-tag .swatch{background:#fff;opacity:0.9;}
+  .floor-meta .progress-line{
+    font-size:12.5px;
+    color:var(--ink-soft);
+  }
+  .progress-line strong{color:var(--ink);font-weight:600;}
+  .chev{
+    flex:none;
+    font-size:18px;
+    color:var(--ink-soft);
+    transform:rotate(0deg);
+    transition:transform .18s ease;
+  }
+  .floor.open .chev{transform:rotate(180deg);}
+
+  .progress-track{
+    height:3px;
+    background:var(--line);
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--good);
+    transition:width .25s ease;
+  }
+
+  .task-list{
+    display:none;
+    padding:6px 16px 14px;
+  }
+  .floor.open .task-list{display:block;}
+  .task-row{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:10px 2px;
+    border-bottom:1px solid var(--line);
+  }
+  .task-row:last-of-type{border-bottom:none;}
+  .task-row .label{
+    flex:1;
+    font-size:15px;
+  }
+  .task-row.done .label{
+    color:var(--ink-soft);
+    text-decoration:line-through;
+    text-decoration-color:var(--line);
+  }
+  .check{
+    width:24px;height:24px;
+    flex:none;
+    border:1.5px solid var(--ink-soft);
+    border-radius:5px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:transform .12s ease;
+  }
+  .check.checked{
+    background:var(--good);
+    border-color:var(--good);
+    transform:scale(1.04);
+  }
+  .check svg{
+    width:14px;height:14px;
+    opacity:0;
+    transform:scale(0.6);
+    transition:opacity .1s ease, transform .12s ease;
+  }
+  .check.checked svg{opacity:1;transform:scale(1);}
+  .task-del{
+    flex:none;
+    border:none;background:none;
+    color:var(--line);
+    font-size:15px;
+    cursor:pointer;
+    padding:4px;
+  }
+  .task-del:hover{color:#b23b3b;}
+
+  .add-row{
+    display:flex;
+    gap:8px;
+    padding:12px 2px 4px;
+  }
+  .add-row input{
+    flex:1;
+    border:1px solid var(--line);
+    background:#fff;
+    border-radius:4px;
+    padding:8px 10px;
+    font-size:14px;
+    font-family:inherit;
+  }
+  .add-row button{
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:#fff;
+    border-radius:4px;
+    padding:0 14px;
+    font-size:13px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+
+  details.admin{
+    margin-top:26px;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  details.admin summary{
+    cursor:pointer;
+    font-size:13px;
+    color:var(--ink-soft);
+    list-style:none;
+  }
+  details.admin summary::-webkit-details-marker{display:none;}
+  .admin-body{
+    margin-top:12px;
+    font-size:13px;
+    color:var(--ink-soft);
+    line-height:1.7;
+  }
+  .admin-body button{
+    margin-top:8px;
+    border:1px solid var(--ink-soft);
+    background:#fff;
+    color:var(--ink);
+    border-radius:4px;
+    padding:7px 12px;
+    font-size:13px;
+    font-family:inherit;
+    cursor:pointer;
+  }
+  .loading{
+    padding:60px 0;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+  }
+</style>
+</head>
+<body>
+<div class="board">
+  <div class="masthead">
+    <h1>今日打掃檢查</h1>
+    <div class="date" id="today-label"></div>
+  </div>
+  <div class="roster-strip" id="roster-strip"></div>
+  <div id="floors"></div>
+
+  <details class="admin">
+    <summary>管理設定</summary>
+    <div class="admin-body">
+      本月清潔工由系統於每月 1 號自動依書院成員重新抽選；打勾狀態每日自動重置。
+      <div>
+        <button id="reroll-btn" type="button">重新抽選本月清潔工</button>
+      </div>
+    </div>
+  </details>
+</div>
+
+<script>
+const BOOKS = ['馭風書院','矽晶書院','曦華書院','靛織書院'];
+const BOOK_COLOR = {
+  '馭風書院':'var(--book-wind)',
+  '矽晶書院':'var(--book-si)',
+  '曦華書院':'var(--book-dawn)',
+  '靛織書院':'var(--book-indigo)'
+};
+// 樓層 -> 負責書院（先隨便分配，之後可再調整）
+const FLOOR_BOOKS = {
+  '1F': ['馭風書院','矽晶書院'],
+  '2F': ['曦華書院'],
+  '3F': ['靛織書院']
+};
+const FLOOR_ORDER = ['1F','2F','3F'];
+
+const DEFAULT_TASKS = {
+  '1F': ['川堂', '大廳穿堂', '教師辦公室', '男生洗手間', '女生洗手間', '中央樓梯間'],
+  '2F': ['走廊', '教室走道', '洗手間', '樓梯間'],
+  '3F': ['走廊', '教室走道', '洗手間', '樓梯間']
+};
+
+// 全校 82 人範例名冊（依書院分組，之後可替換成真實名單）
+function buildRoster(){
+  const counts = { '馭風書院':21, '矽晶書院':21, '曦華書院':20, '靛織書院':20 };
+  const roster = {};
+  BOOKS.forEach(book=>{
+    const n = counts[book];
+    roster[book] = Array.from({length:n}, (_,i)=> book.slice(0,2) + String(i+1).padStart(2,'0'));
+  });
+  return roster;
+}
+const ROSTER = buildRoster();
+
+function pad(n){ return String(n).padStart(2,'0'); }
+function monthKey(d){ return d.getFullYear() + '-' + pad(d.getMonth()+1); }
+function dateKey(d){ return monthKey(d) + '-' + pad(d.getDate()); }
+function pick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+const now = new Date();
+const MKEY = monthKey(now);
+const DKEY = dateKey(now);
+
+let tasksData = null;      // {floor: [taskName,...]}
+let inspectorData = null;  // {book: name}
+let checklistData = null;  // {"floor||task": true}
+
+async function loadAll(){
+  tasksData = await loadJSON('tasks', DEFAULT_TASKS);
+  inspectorData = await loadJSON('inspectors:'+MKEY, null);
+  if(!inspectorData){
+    inspectorData = {};
+    BOOKS.forEach(book=>{ inspectorData[book] = pick(ROSTER[book]); });
+    await saveJSON('inspectors:'+MKEY, inspectorData);
+  }
+  checklistData = await loadJSON('checklist:'+DKEY, {});
+}
+
+async function loadJSON(key, fallback){
+  try{
+    const res = await window.storage.get(key, true);
+    return res ? JSON.parse(res.value) : fallback;
+  }catch(e){
+    return fallback;
+  }
+}
+async function saveJSON(key, obj){
+  try{
+    await window.storage.set(key, JSON.stringify(obj), true);
+  }catch(e){
+    console.error('storage error', key, e);
+  }
+}
+
+function taskId(floor, task){ return floor + '||' + task; }
+
+function render(){
+  document.getElementById('today-label').textContent =
+    now.toLocaleDateString('zh-TW', { month:'long', day:'numeric', weekday:'short' });
+
+  // 本月清潔工總覽
+  const stripEl = document.getElementById('roster-strip');
+  stripEl.innerHTML = '';
+  BOOKS.forEach(book=>{
+    const chip = document.createElement('div');
+    chip.className = 'roster-chip';
+    chip.innerHTML = `<span class="swatch" style="background:${BOOK_COLOR[book]}"></span>
+      <b>${book}</b><span class="who">${inspectorData[book]}</span>`;
+    stripEl.appendChild(chip);
+  });
+
+  const floorsEl = document.getElementById('floors');
+  floorsEl.innerHTML = '';
+
+  FLOOR_ORDER.forEach((floor, idx)=>{
+    const books = FLOOR_BOOKS[floor] || [];
+    const tasks = tasksData[floor] || [];
+    const doneCount = tasks.filter(t => checklistData[taskId(floor,t)]).length;
+    const pct = tasks.length ? Math.round(doneCount/tasks.length*100) : 0;
+
+    const card = document.createElement('div');
+    card.className = 'floor' + (idx===0 ? ' open' : '');
+
+    const tagsHtml = books.map(b=>
+      `<span class="book-tag" style="background:${BOOK_COLOR[b]}">
+        <span class="swatch"></span>${b}・${inspectorData[b]}
+      </span>`).join('');
+
+    card.innerHTML = `
+      <div class="floor-head">
+        <div class="floor-num">${floor}</div>
+        <div class="floor-meta">
+          <div class="tags">${tagsHtml}</div>
+          <div class="progress-line"><strong>${doneCount}</strong> / ${tasks.length} 項已完成</div>
+        </div>
+        <div class="chev">⌄</div>
+      </div>
+      <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="task-list">
+        ${tasks.map(t=>{
+          const done = !!checklistData[taskId(floor,t)];
+          return `<div class="task-row ${done?'done':''}" data-floor="${floor}" data-task="${t}">
+            <div class="check ${done?'checked':''}">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="label">${t}</div>
+            <button class="task-del" data-floor="${floor}" data-task="${t}" title="刪除項目">✕</button>
+          </div>`;
+        }).join('')}
+        <div class="add-row">
+          <input type="text" placeholder="新增打掃項目…" data-floor-input="${floor}">
+          <button data-floor-add="${floor}">新增</button>
+        </div>
+      </div>
+    `;
+
+    card.querySelector('.floor-head').addEventListener('click', ()=>{
+      card.classList.toggle('open');
+    });
+
+    floorsEl.appendChild(card);
+  });
+
+  // checkbox toggle
+  floorsEl.querySelectorAll('.task-row').forEach(row=>{
+    row.querySelector('.check').addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const floor = row.dataset.floor, task = row.dataset.task;
+      const id = taskId(floor, task);
+      checklistData[id] = !checklistData[id];
+      await saveJSON('checklist:'+DKEY, checklistData);
+      render();
+    });
+  });
+
+  // delete task
+  floorsEl.querySelectorAll('.task-del').forEach(btn=>{
+    btn.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const floor = btn.dataset.floor, task = btn.dataset.task;
+      tasksData[floor] = (tasksData[floor]||[]).filter(t=>t!==task);
+      delete checklistData[taskId(floor,task)];
+      await saveJSON('tasks', tasksData);
+      await saveJSON('checklist:'+DKEY, checklistData);
+      render();
+    });
+  });
+
+  // add task
+  floorsEl.querySelectorAll('[data-floor-add]').forEach(btn=>{
+    const floor = btn.dataset.floorAdd;
+    const doAdd = async ()=>{
+      const input = floorsEl.querySelector(`[data-floor-input="${floor}"]`);
+      const val = input.value.trim();
+      if(!val) return;
+      tasksData[floor] = tasksData[floor] || [];
+      if(!tasksData[floor].includes(val)) tasksData[floor].push(val);
+      await saveJSON('tasks', tasksData);
+      render();
+    };
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); doAdd(); });
+  });
+  floorsEl.querySelectorAll('[data-floor-input]').forEach(input=>{
+    input.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        floorsEl.querySelector(`[data-floor-add="${input.dataset.floorInput}"]`).click();
+      }
+    });
+    input.addEventListener('click', e=>e.stopPropagation());
+  });
+
+  // keep newly-opened state after re-render: re-open any floor whose head was open before
+}
+
+document.getElementById('reroll-btn').addEventListener('click', async ()=>{
+  if(!confirm('確定要重新抽選本月清潔工嗎？這會覆蓋目前的名單。')) return;
+  BOOKS.forEach(book=>{ inspectorData[book] = pick(ROSTER[book]); });
+  await saveJSON('inspectors:'+MKEY, inspectorData);
+  render();
+});
+
+(async function init(){
+  document.getElementById('floors').innerHTML = '<div class="loading">載入中…</div>';
+  await loadAll();
+  render();
+})();
+</script>
+</body>
+</html>
