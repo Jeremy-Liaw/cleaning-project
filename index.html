@@ -391,6 +391,12 @@
     font-size:14.5px;
     box-shadow:0 -4px 18px rgba(0,0,0,.10);
   }
+  .submitted-note{
+    font-size:12.5px;
+    color:var(--good);
+    font-weight:600;
+    margin-bottom:8px;
+  }
 </style>
 </head>
 <body>
@@ -711,7 +717,7 @@ function render(){
           const triggerLabel = v ? RATING_LABEL[v] : '尚未檢查';
           return `<div class="task-row ${levelClass}" data-floor="${floor}" data-label="${item.label}">
             <div class="label">${item.label}</div>
-            <button class="rate-trigger" type="button" ${alreadySubmitted?'disabled':''}>
+            <button class="rate-trigger" type="button">
               <span>${triggerLabel}</span>
               <span class="trigger-arrow"></span>
             </button>
@@ -739,46 +745,45 @@ function render(){
   });
 
   const allDone = totalTasks > 0 && passCount === totalTasks;
-  if(alreadySubmitted){
-    const t = new Date(submissions[selectedBook]);
-    submitEl.innerHTML = `<div class="submitted-banner">✓ ${selectedBook}今日打掃已於 ${pad(t.getHours())}:${pad(t.getMinutes())} 送出</div>`;
-  }else{
-    submitEl.innerHTML = `
-      <div class="submit-box">
-        <div class="hint">${allDone ? '全部項目都已達到合格以上，可以送出今日結果' : `還有 ${totalTasks-passCount} 項尚未達到「有一點灰塵，但大致清掃」以上`}</div>
-        <button class="submit-btn" id="submit-btn">送出今日結果</button>
-      </div>`;
-    const btn = document.getElementById('submit-btn');
-    if(btn){
-      btn.addEventListener('click', async ()=>{
-        if(!allDone){
-          const ok = confirm(`還有 ${totalTasks-passCount} 項尚未達到合格以上，確定要送出嗎？`);
-          if(!ok) return;
-        }
-        btn.disabled = true;
-        btn.textContent = '送出中…';
+  const submittedNote = alreadySubmitted
+    ? `<div class="submitted-note">✓ 今日已於 ${pad(new Date(submissions[selectedBook]).getHours())}:${pad(new Date(submissions[selectedBook]).getMinutes())} 送出過，仍可再次送出更新結果</div>`
+    : '';
+  submitEl.innerHTML = `
+    <div class="submit-box">
+      ${submittedNote}
+      <div class="hint">${allDone ? '全部項目都已達到合格以上，可以送出今日結果' : `還有 ${totalTasks-passCount} 項尚未達到「有一點灰塵，但大致清掃」以上`}</div>
+      <button class="submit-btn" id="submit-btn">${alreadySubmitted ? '重新送出今日結果' : '送出今日結果'}</button>
+    </div>`;
+  const btn = document.getElementById('submit-btn');
+  if(btn){
+    btn.addEventListener('click', async ()=>{
+      if(!allDone){
+        const ok = confirm(`還有 ${totalTasks-passCount} 項尚未達到合格以上，確定要送出嗎？`);
+        if(!ok) return;
+      }
+      btn.disabled = true;
+      btn.textContent = '送出中…';
 
-        // 先抓伺服器上最新的整體打勾資料，只把「自己書院負責的項目」蓋上去，
-        // 避免蓋掉其他書院同時間送出的結果
-        const latestKV = await fetchDump();
-        const serverChecklist = latestKV['checklist:'+DKEY] ? JSON.parse(latestKV['checklist:'+DKEY]) : {};
-        floorsForBook(selectedBook).forEach(floor=>{
-          tasksData[floor].filter(item=>item.book===selectedBook).forEach(item=>{
-            const id = taskId(floor, item.label);
-            if(checklistData[id]) serverChecklist[id] = checklistData[id];
-            else delete serverChecklist[id];
-          });
+      // 先抓伺服器上最新的整體打勾資料，只把「自己書院負責的項目」蓋上去，
+      // 避免蓋掉其他書院同時間送出的結果
+      const latestKV = await fetchDump();
+      const serverChecklist = latestKV['checklist:'+DKEY] ? JSON.parse(latestKV['checklist:'+DKEY]) : {};
+      floorsForBook(selectedBook).forEach(floor=>{
+        tasksData[floor].filter(item=>item.book===selectedBook).forEach(item=>{
+          const id = taskId(floor, item.label);
+          if(checklistData[id]) serverChecklist[id] = checklistData[id];
+          else delete serverChecklist[id];
         });
-        checklistData = serverChecklist;
-        await saveJSON('checklist:'+DKEY, checklistData);
-
-        const latestSubs = latestKV['submissions:'+DKEY] ? JSON.parse(latestKV['submissions:'+DKEY]) : {};
-        latestSubs[selectedBook] = new Date().toISOString();
-        submissions = latestSubs;
-        await saveJSON('submissions:'+DKEY, submissions);
-        render();
       });
-    }
+      checklistData = serverChecklist;
+      await saveJSON('checklist:'+DKEY, checklistData);
+
+      const latestSubs = latestKV['submissions:'+DKEY] ? JSON.parse(latestKV['submissions:'+DKEY]) : {};
+      latestSubs[selectedBook] = new Date().toISOString();
+      submissions = latestSubs;
+      await saveJSON('submissions:'+DKEY, submissions);
+      render();
+    });
   }
 
   renderAdminSubmissions();
