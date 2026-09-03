@@ -19,6 +19,8 @@
     --book-dawn:#d97e3d;
     --book-indigo:#4b4e93;
     --good:#2f8f5b;
+    --warn:#b8860b;
+    --bad:#b23b3b;
   }
   *{box-sizing:border-box;}
   body{
@@ -39,7 +41,7 @@
     justify-content:space-between;
     border-bottom:3px solid var(--ink);
     padding-bottom:14px;
-    margin-bottom:6px;
+    margin-bottom:16px;
   }
   .masthead h1{
     font-family:'Barlow Condensed',sans-serif;
@@ -54,11 +56,54 @@
     color:var(--ink-soft);
     font-variant-numeric:tabular-nums;
   }
+
+  .who-box{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:14px 16px;
+    margin-bottom:20px;
+  }
+  .who-box label{
+    display:block;
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:8px;
+  }
+  .who-box select{
+    width:100%;
+    font-family:inherit;
+    font-size:15px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+    color:var(--ink);
+  }
+  .who-current{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .who-current .info{font-size:14px;}
+  .who-current .info b{font-weight:600;}
+  .who-current .swap-btn{
+    flex:none;
+    border:none;
+    background:none;
+    color:var(--ink-soft);
+    font-size:13px;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:4px;
+  }
+
   .roster-strip{
     display:flex;
     flex-wrap:wrap;
     gap:8px;
-    margin:18px 0 30px;
+    margin:0 0 22px;
   }
   .roster-chip{
     display:flex;
@@ -76,6 +121,15 @@
   .roster-chip b{font-weight:600;}
   .roster-chip .who{color:var(--ink-soft);}
 
+  .empty-hint{
+    padding:40px 18px;
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+    border:1px dashed var(--line);
+    border-radius:4px;
+  }
+
   .floor{
     border:1px solid var(--line);
     background:var(--card);
@@ -89,8 +143,6 @@
     gap:16px;
     padding:14px 16px;
     border-bottom:1px solid var(--line);
-    cursor:pointer;
-    user-select:none;
   }
   .floor-num{
     font-family:'Barlow Condensed',sans-serif;
@@ -118,14 +170,6 @@
     color:var(--ink-soft);
   }
   .progress-line strong{color:var(--ink);font-weight:600;}
-  .chev{
-    flex:none;
-    font-size:18px;
-    color:var(--ink-soft);
-    transform:rotate(0deg);
-    transition:transform .18s ease;
-  }
-  .floor.open .chev{transform:rotate(180deg);}
 
   .progress-track{
     height:3px;
@@ -138,75 +182,40 @@
   }
 
   .task-list{
-    display:none;
     padding:6px 16px 14px;
   }
-  .floor.open .task-list{display:block;}
   .task-row{
     display:flex;
     align-items:center;
     gap:12px;
-    padding:10px 2px;
+    padding:11px 10px;
     border-bottom:1px solid var(--line);
+    border-radius:3px;
   }
   .task-row:last-of-type{border-bottom:none;}
   .task-row .label{
     flex:1;
     font-size:15px;
   }
-  .task-row.done .label{
-    color:var(--ink-soft);
-    text-decoration:line-through;
-    text-decoration-color:var(--line);
-  }
-  .check{
-    width:24px;height:24px;
+  .task-row.level-1{background:rgba(47,143,91,0.08);}
+  .task-row.level-2{background:rgba(184,134,11,0.09);}
+  .task-row.level-3{background:rgba(178,59,59,0.10);}
+
+  .rate-select{
     flex:none;
-    border:1.5px solid var(--ink-soft);
-    border-radius:5px;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    cursor:pointer;
-    transition:transform .12s ease;
-  }
-  .check.checked{
-    background:var(--good);
-    border-color:var(--good);
-    transform:scale(1.04);
-  }
-  .check svg{
-    width:14px;height:14px;
-    opacity:0;
-    transform:scale(0.6);
-    transition:opacity .1s ease, transform .12s ease;
-  }
-  .check.checked svg{opacity:1;transform:scale(1);}
-  .add-row{
-    display:flex;
-    gap:8px;
-    padding:12px 2px 4px;
-  }
-  .add-row input{
-    flex:1;
-    border:1px solid var(--line);
-    background:#fff;
-    border-radius:4px;
-    padding:8px 10px;
-    font-size:14px;
+    width:180px;
     font-family:inherit;
-  }
-  .add-row button{
-    border:1px solid var(--ink);
-    background:var(--ink);
-    color:#fff;
-    border-radius:4px;
-    padding:0 14px;
     font-size:13px;
-    font-family:inherit;
-    cursor:pointer;
+    padding:8px 8px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:#fff;
+    color:var(--ink);
   }
+  .task-row.level-1 .rate-select{border-color:var(--good);color:var(--good);}
+  .task-row.level-2 .rate-select{border-color:var(--warn);color:var(--warn);}
+  .task-row.level-3 .rate-select{border-color:var(--bad);color:var(--bad);}
+  .rate-select:disabled{opacity:.6;}
 
   details.admin{
     margin-top:26px;
@@ -228,6 +237,7 @@
   }
   .admin-body button{
     margin-top:8px;
+    margin-right:6px;
     border:1px solid var(--ink-soft);
     background:#fff;
     color:var(--ink);
@@ -237,6 +247,15 @@
     font-family:inherit;
     cursor:pointer;
   }
+  .admin-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:6px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .admin-row:last-child{border-bottom:none;}
   .loading{
     padding:60px 0;
     text-align:center;
@@ -294,6 +313,8 @@
     <h1>今日打掃檢查</h1>
     <div class="date" id="today-label"></div>
   </div>
+
+  <div class="who-box" id="who-box"></div>
   <div class="roster-strip" id="roster-strip"></div>
   <div id="floors"></div>
   <div id="submit-area"></div>
@@ -301,7 +322,9 @@
   <details class="admin">
     <summary>管理設定</summary>
     <div class="admin-body">
+
       本月清潔工由系統於每月 1 號自動依書院成員重新抽選；打勾狀態每日自動重置。
+
       <div>
         PS. 此網頁為範例網頁，若成功當選，將更新整體功能，並建立雲端空間。
       <div>
@@ -311,10 +334,11 @@
       <div>
             靛織書院全體
       </div>
+      
       <div>
         <button id="reroll-btn" type="button">重新抽選本月清潔工</button>
-        <button id="unsubmit-btn" type="button" style="display:none;">撤銷今日送出</button>
       </div>
+      <div id="admin-submissions"></div>
     </div>
   </details>
 </div>
@@ -327,84 +351,85 @@ const BOOK_COLOR = {
   '曦華書院':'var(--book-dawn)',
   '靛織書院':'var(--book-indigo)'
 };
-// 樓層 -> 負責書院
-const FLOOR_BOOKS = {
-  '1F': ['曦華書院','靛織書院'],
-  '2F': ['馭風書院'],
-  '3F': ['矽晶書院']
+
+// 每個打掃項目歸屬的樓層與書院
+const DEFAULT_TASKS = {
+  '1F': [
+    { label:'警衛室附近地板', book:'曦華書院' },
+    { label:'花圃維護', book:'曦華書院' },
+    { label:'走廊地板（靠共伴樞）', book:'曦華書院' },
+    { label:'花園', book:'曦華書院' },
+    { label:'火塘－地板', book:'靛織書院' },
+    { label:'火塘－桌子', book:'靛織書院' },
+    { label:'創客空間－地板', book:'靛織書院' },
+    { label:'創客空間－窗戶及桌椅', book:'靛織書院' },
+    { label:'性別友善廁所－洗手台', book:'曦華書院' },
+    { label:'性別友善廁所－馬桶', book:'曦華書院' },
+    { label:'性別友善廁所－地板', book:'曦華書院' },
+    { label:'無障礙廁所＋廁所走廊－地板', book:'曦華書院' },
+    { label:'無障礙廁所＋廁所走廊－刷馬桶、小便斗', book:'曦華書院' },
+    { label:'垃圾儲藏室（分類垃圾）', book:'靛織書院' },
+    { label:'一樓大廳－花圃維護', book:'曦華書院' },
+    { label:'一樓大廳－地板簡單清潔', book:'曦華書院' },
+    { label:'泮林－窗戶', book:'靛織書院' },
+    { label:'泮林－櫃子', book:'靛織書院' },
+    { label:'泮林－地板', book:'靛織書院' },
+    { label:'體育器材室（整理器材）', book:'靛織書院' },
+    { label:'一樓走廊－第一部分（掃拖）', book:'曦華書院' },
+    { label:'一樓走廊－第二部分（掃拖）', book:'曦華書院' },
+    { label:'一樓走廊－第三部分（掃拖）', book:'曦華書院' },
+    { label:'樓梯－共伴樞旁', book:'曦華書院' },
+    { label:'樓梯－廁所旁', book:'曦華書院' },
+    { label:'樓梯－通學樓梯（到 2F 空地）', book:'曦華書院' }
+  ],
+  '2F': [
+    { label:'教研樞旁花圃', book:'馭風書院' },
+    { label:'教研樞旁空地地板維護', book:'馭風書院' },
+    { label:'一般教室（一）', book:'馭風書院' },
+    { label:'一般教室（二）', book:'馭風書院' },
+    { label:'廁所－地板', book:'馭風書院' },
+    { label:'廁所－男廁刷馬桶等', book:'馭風書院' },
+    { label:'廁所－女廁刷馬桶等', book:'馭風書院' },
+    { label:'教研樞旁廁所－男廁', book:'馭風書院' },
+    { label:'教研樞旁廁所－女廁', book:'馭風書院' },
+    { label:'走廊＋無障礙廁所', book:'馭風書院' },
+    { label:'議策樞維護', book:'馭風書院' },
+    { label:'教研樞前空地', book:'馭風書院' },
+    { label:'通往一樓校園鏤空處（欄杆＋地板）', book:'馭風書院' },
+    { label:'向陽階梯附近地板一', book:'馭風書院' },
+    { label:'向陽階梯附近地板二', book:'馭風書院' },
+    { label:'樓梯－向陽階梯＋後方花圃維護（到 2F）', book:'馭風書院' },
+    { label:'樓梯－廁所樓梯（靠近一般教室）', book:'馭風書院' },
+    { label:'樓梯－廁所樓梯（靠近教研樞）', book:'馭風書院' }
+  ],
+  '3F': [
+    { label:'淬維護', book:'矽晶書院' },
+    { label:'一般教室（一）', book:'矽晶書院' },
+    { label:'一般教室（二）', book:'矽晶書院' },
+    { label:'廁所－地板', book:'矽晶書院' },
+    { label:'廁所－男廁刷馬桶等', book:'矽晶書院' },
+    { label:'廁所－女廁刷馬桶等', book:'矽晶書院' },
+    { label:'花圃旁廁所－男廁', book:'矽晶書院' },
+    { label:'花圃旁廁所－女廁', book:'矽晶書院' },
+    { label:'走廊＋無障礙廁所', book:'矽晶書院' },
+    { label:'地科／生物教室維護', book:'矽晶書院' },
+    { label:'PBL 研創維護', book:'矽晶書院' },
+    { label:'迴響維護', book:'矽晶書院' },
+    { label:'走廊－第一部分（掃加拖）', book:'矽晶書院' },
+    { label:'走廊－第二部分（掃加拖）', book:'矽晶書院' },
+    { label:'走廊－第三部分（掃加拖）', book:'矽晶書院' },
+    { label:'走廊－第四部分（掃加拖）', book:'矽晶書院' },
+    { label:'走廊－第五部分（掃加拖）', book:'矽晶書院' },
+    { label:'花圃空間', book:'矽晶書院' }
+  ]
 };
 const FLOOR_ORDER = ['1F','2F','3F'];
 
-const DEFAULT_TASKS = {
-  '1F': [
-    '警衛室附近地板',
-    '花圃維護',
-    '走廊地板（靠共伴樞）',
-    '花園',
-    '火塘－地板',
-    '火塘－桌子',
-    '創客空間－地板',
-    '創客空間－窗戶及桌椅',
-    '性別友善廁所－洗手台',
-    '性別友善廁所－馬桶',
-    '性別友善廁所－地板',
-    '無障礙廁所＋廁所走廊－地板',
-    '無障礙廁所＋廁所走廊－刷馬桶、小便斗',
-    '垃圾儲藏室（分類垃圾）',
-    '一樓大廳－花圃維護',
-    '一樓大廳－地板簡單清潔',
-    '泮林－窗戶',
-    '泮林－櫃子',
-    '泮林－地板',
-    '體育器材室（整理器材）',
-    '一樓走廊－第一部分（掃拖）',
-    '一樓走廊－第二部分（掃拖）',
-    '一樓走廊－第三部分（掃拖）',
-    '樓梯－共伴樞旁',
-    '樓梯－廁所旁',
-    '樓梯－通學樓梯（到 2F 空地）'
-  ],
-  '2F': [
-    '教研樞旁花圃',
-    '教研樞旁空地地板維護',
-    '一般教室（一）',
-    '一般教室（二）',
-    '廁所－地板',
-    '廁所－男廁刷馬桶等',
-    '廁所－女廁刷馬桶等',
-    '教研樞旁廁所－男廁',
-    '教研樞旁廁所－女廁',
-    '走廊＋無障礙廁所',
-    '議策樞維護',
-    '教研樞前空地',
-    '通往一樓校園鏤空處（欄杆＋地板）',
-    '向陽階梯附近地板一',
-    '向陽階梯附近地板二',
-    '樓梯－向陽階梯＋後方花圃維護（到 2F）',
-    '樓梯－廁所樓梯（靠近一般教室）',
-    '樓梯－廁所樓梯（靠近教研樞）'
-  ],
-  '3F': [
-    '淬維護',
-    '一般教室（一）',
-    '一般教室（二）',
-    '廁所－地板',
-    '廁所－男廁刷馬桶等',
-    '廁所－女廁刷馬桶等',
-    '花圃旁廁所－男廁',
-    '花圃旁廁所－女廁',
-    '走廊＋無障礙廁所',
-    '地科／生物教室維護',
-    'PBL 研創維護',
-    '迴響維護',
-    '走廊－第一部分（掃加拖）',
-    '走廊－第二部分（掃加拖）',
-    '走廊－第三部分（掃加拖）',
-    '走廊－第四部分（掃加拖）',
-    '走廊－第五部分（掃加拖）',
-    '花圃空間'
-  ]
-};
+const RATINGS = [
+  { v:'1', label:'1・非常乾淨' },
+  { v:'2', label:'2・有一點灰塵，但大致清掃' },
+  { v:'3', label:'3・不合格' }
+];
 
 // 全校 82 人範例名冊（依書院分組，之後可替換成真實名單）
 function buildRoster(){
@@ -427,14 +452,14 @@ const now = new Date();
 const MKEY = monthKey(now);
 const DKEY = dateKey(now);
 
-let tasksData = null;      // {floor: [taskName,...]}
-let inspectorData = null;  // {book: name}
-let checklistData = null;  // {"floor||task": true}
-let submissionData = null; // {at: isoString} | null
-const openFloors = { '1F': true, '2F': false, '3F': false };
+let tasksData = null;        // {floor: [{label, book}]}
+let inspectorData = null;    // {book: name}
+let checklistData = null;    // {"floor||label": "1"|"2"|"3"}
+let submissions = null;      // {book: isoString}
+let selectedBook = null;     // 目前選擇的書院
 
 async function loadAll(){
-  tasksData = await loadJSON('tasks', DEFAULT_TASKS);
+  tasksData = DEFAULT_TASKS; // 打掃項目固定，不再由使用者新增/刪除
   inspectorData = await loadJSON('inspectors:'+MKEY, null);
   if(!inspectorData){
     inspectorData = {};
@@ -442,7 +467,7 @@ async function loadAll(){
     await saveJSON('inspectors:'+MKEY, inspectorData);
   }
   checklistData = await loadJSON('checklist:'+DKEY, {});
-  submissionData = await loadJSON('submission:'+DKEY, null);
+  submissions = await loadJSON('submissions:'+DKEY, {});
 }
 
 async function loadJSON(key, fallback){
@@ -461,11 +486,48 @@ async function saveJSON(key, obj){
   }
 }
 
-function taskId(floor, task){ return floor + '||' + task; }
+function taskId(floor, label){ return floor + '||' + label; }
+
+function floorsForBook(book){
+  return FLOOR_ORDER.filter(floor => tasksData[floor].some(item=>item.book===book));
+}
+
+function renderWhoBox(){
+  const el = document.getElementById('who-box');
+  if(!selectedBook){
+    el.innerHTML = `
+      <label for="book-select">請問您的書院為何？</label>
+      <select id="book-select">
+        <option value="">請選擇書院</option>
+        ${BOOKS.map(b=>`<option value="${b}">${b}</option>`).join('')}
+      </select>
+    `;
+    document.getElementById('book-select').addEventListener('change', (e)=>{
+      if(e.target.value){
+        selectedBook = e.target.value;
+        render();
+      }
+    });
+  }else{
+    const floors = floorsForBook(selectedBook).join('、');
+    el.innerHTML = `
+      <div class="who-current">
+        <div class="info">您的書院：<b>${selectedBook}</b>（負責 ${floors}）・本月清潔工：${inspectorData[selectedBook]}</div>
+        <button class="swap-btn" id="swap-book-btn" type="button">更換書院</button>
+      </div>
+    `;
+    document.getElementById('swap-book-btn').addEventListener('click', ()=>{
+      selectedBook = null;
+      render();
+    });
+  }
+}
 
 function render(){
   document.getElementById('today-label').textContent =
     now.toLocaleDateString('zh-TW', { month:'long', day:'numeric', weekday:'short' });
+
+  renderWhoBox();
 
   // 本月清潔工總覽
   const stripEl = document.getElementById('roster-strip');
@@ -479,105 +541,121 @@ function render(){
   });
 
   const floorsEl = document.getElementById('floors');
+  const submitEl = document.getElementById('submit-area');
   floorsEl.innerHTML = '';
 
-  let totalTasks = 0, totalDone = 0;
+  if(!selectedBook){
+    floorsEl.innerHTML = '<div class="empty-hint">請先選擇您的書院，才會顯示需要檢查的樓層與項目。</div>';
+    submitEl.innerHTML = '';
+    renderAdminSubmissions();
+    return;
+  }
 
-  FLOOR_ORDER.forEach((floor, idx)=>{
-    const books = FLOOR_BOOKS[floor] || [];
-    const tasks = tasksData[floor] || [];
-    const doneCount = tasks.filter(t => checklistData[taskId(floor,t)]).length;
-    const pct = tasks.length ? Math.round(doneCount/tasks.length*100) : 0;
-    totalTasks += tasks.length;
-    totalDone += doneCount;
+  const alreadySubmitted = !!submissions[selectedBook];
+  let totalTasks = 0, passCount = 0;
+
+  floorsForBook(selectedBook).forEach(floor=>{
+    const items = tasksData[floor].filter(item=>item.book===selectedBook);
+    const doneCount = items.filter(item=>{
+      const v = checklistData[taskId(floor,item.label)];
+      return v === '1' || v === '2';
+    }).length;
+    totalTasks += items.length;
+    passCount += doneCount;
+    const pct = items.length ? Math.round(doneCount/items.length*100) : 0;
 
     const card = document.createElement('div');
-    card.className = 'floor' + (openFloors[floor] ? ' open' : '');
-
-    const tagsHtml = books.map(b=>
-      `<span class="book-tag" style="background:${BOOK_COLOR[b]}">
-        <span class="swatch"></span>${b}・${inspectorData[b]}
-      </span>`).join('');
+    card.className = 'floor';
 
     card.innerHTML = `
       <div class="floor-head">
         <div class="floor-num">${floor}</div>
         <div class="floor-meta">
-          <div class="tags">${tagsHtml}</div>
-          <div class="progress-line"><strong>${doneCount}</strong> / ${tasks.length} 項已完成</div>
+          <div class="tags">
+            <span class="book-tag" style="background:${BOOK_COLOR[selectedBook]}"><span class="swatch"></span>${selectedBook}</span>
+          </div>
+          <div class="progress-line"><strong>${doneCount}</strong> / ${items.length} 項達到合格以上</div>
         </div>
-        <div class="chev">⌄</div>
       </div>
       <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
       <div class="task-list">
-        ${tasks.map(t=>{
-          const done = !!checklistData[taskId(floor,t)];
-          return `<div class="task-row ${done?'done':''}" data-floor="${floor}" data-task="${t}">
-            <div class="check ${done?'checked':''}" style="${submissionData?'opacity:.55;cursor:default;':''}">
-              <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </div>
-            <div class="label">${t}</div>
+        ${items.map(item=>{
+          const v = checklistData[taskId(floor,item.label)] || '';
+          const levelClass = v ? 'level-'+v : '';
+          return `<div class="task-row ${levelClass}" data-floor="${floor}" data-label="${item.label}">
+            <div class="label">${item.label}</div>
+            <select class="rate-select" ${alreadySubmitted?'disabled':''}>
+              <option value="" ${v===''?'selected':''}>尚未檢查</option>
+              ${RATINGS.map(r=>`<option value="${r.v}" ${v===r.v?'selected':''}>${r.label}</option>`).join('')}
+            </select>
           </div>`;
         }).join('')}
       </div>
     `;
-
-    card.querySelector('.floor-head').addEventListener('click', ()=>{
-      openFloors[floor] = !openFloors[floor];
-      card.classList.toggle('open');
-    });
-
     floorsEl.appendChild(card);
   });
 
-  // checkbox toggle
+  // 下拉選單變更事件
   floorsEl.querySelectorAll('.task-row').forEach(row=>{
-    row.querySelector('.check').addEventListener('click', async (e)=>{
-      e.stopPropagation();
-      if(submissionData) return; // 今日已送出，鎖定不可再改
-      const floor = row.dataset.floor, task = row.dataset.task;
-      const id = taskId(floor, task);
-      checklistData[id] = !checklistData[id];
+    row.querySelector('.rate-select').addEventListener('change', async (e)=>{
+      const floor = row.dataset.floor, label = row.dataset.label;
+      const id = taskId(floor, label);
+      const val = e.target.value;
+      if(val){ checklistData[id] = val; } else { delete checklistData[id]; }
       await saveJSON('checklist:'+DKEY, checklistData);
       render();
     });
   });
 
   // 繳交區塊
-  const submitEl = document.getElementById('submit-area');
-  const allDone = totalTasks > 0 && totalDone === totalTasks;
-  if(submissionData){
-    const t = new Date(submissionData.at);
-    submitEl.innerHTML = `<div class="submitted-banner">✓ 今日打掃已於 ${pad(t.getHours())}:${pad(t.getMinutes())} 送出</div>`;
+  const allDone = totalTasks > 0 && passCount === totalTasks;
+  if(alreadySubmitted){
+    const t = new Date(submissions[selectedBook]);
+    submitEl.innerHTML = `<div class="submitted-banner">✓ ${selectedBook}今日打掃已於 ${pad(t.getHours())}:${pad(t.getMinutes())} 送出</div>`;
   }else{
     submitEl.innerHTML = `
       <div class="submit-box">
-        <div class="hint">${allDone ? '全部項目已完成，可以送出今日結果' : `還有 ${totalTasks-totalDone} 項未完成才能送出`}</div>
+        <div class="hint">${allDone ? '全部項目都已達到合格以上，可以送出今日結果' : `還有 ${totalTasks-passCount} 項尚未達到「有一點灰塵，但大致清掃」以上，才能送出`}</div>
         <button class="submit-btn" id="submit-btn" ${allDone?'':'disabled'}>送出今日結果</button>
       </div>`;
     const btn = document.getElementById('submit-btn');
     if(btn){
       btn.addEventListener('click', async ()=>{
-        submissionData = { at: new Date().toISOString() };
-        await saveJSON('submission:'+DKEY, submissionData);
+        submissions[selectedBook] = new Date().toISOString();
+        await saveJSON('submissions:'+DKEY, submissions);
         render();
       });
     }
   }
-  document.getElementById('unsubmit-btn').style.display = submissionData ? 'inline-block' : 'none';
+
+  renderAdminSubmissions();
+}
+
+function renderAdminSubmissions(){
+  const el = document.getElementById('admin-submissions');
+  el.innerHTML = BOOKS.map(book=>{
+    const sub = submissions[book];
+    const status = sub ? `已於 ${pad(new Date(sub).getHours())}:${pad(new Date(sub).getMinutes())} 送出` : '尚未送出';
+    return `<div class="admin-row">
+      <span>${book}：${status}</span>
+      ${sub ? `<button data-unsubmit="${book}" type="button">撤銷送出</button>` : ''}
+    </div>`;
+  }).join('');
+  el.querySelectorAll('[data-unsubmit]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const book = btn.dataset.unsubmit;
+      if(!confirm(`確定要撤銷 ${book} 今日的送出紀錄嗎？`)) return;
+      delete submissions[book];
+      await saveJSON('submissions:'+DKEY, submissions);
+      render();
+    });
+  });
 }
 
 document.getElementById('reroll-btn').addEventListener('click', async ()=>{
   if(!confirm('確定要重新抽選本月清潔工嗎？這會覆蓋目前的名單。')) return;
   BOOKS.forEach(book=>{ inspectorData[book] = pick(ROSTER[book]); });
   await saveJSON('inspectors:'+MKEY, inspectorData);
-  render();
-});
-
-document.getElementById('unsubmit-btn').addEventListener('click', async ()=>{
-  if(!confirm('確定要撤銷今日的送出紀錄嗎？')) return;
-  submissionData = null;
-  await saveJSON('submission:'+DKEY, null);
   render();
 });
 
