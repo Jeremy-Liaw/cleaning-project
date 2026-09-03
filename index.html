@@ -517,12 +517,12 @@ const DEFAULT_TASKS = {
 const FLOOR_ORDER = ['1F','2F','3F'];
 
 const RATINGS = [
-  { v:'1', label:'1・非常乾淨' },
-  { v:'2', label:'2・有一點灰塵，但大致清掃' },
-  { v:'3', label:'3・不合格' }
+  { value:'1', label:'1・非常乾淨' },
+  { value:'2', label:'2・有一點灰塵，但大致清掃' },
+  { value:'3', label:'3・不合格' }
 ];
 const RATING_LABEL = {};
-RATINGS.forEach(r=>RATING_LABEL[r.v]=r.label);
+RATINGS.forEach(r=>RATING_LABEL[r.value]=r.label);
 
 // 全校 82 人範例名冊（依書院分組，之後可替換成真實名單）
 function buildRoster(){
