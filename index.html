@@ -332,10 +332,29 @@
   }
   .admin-row:last-child{border-bottom:none;}
   .loading{
-    padding:50px 0;
+    padding:50px 0 30px;
     text-align:center;
     color:var(--ink-soft);
     font-size:14px;
+  }
+  .loading-bar-track{
+    width:160px;
+    height:4px;
+    margin:14px auto 0;
+    background:var(--line);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .loading-bar-fill{
+    width:40%;
+    height:100%;
+    background:var(--ink);
+    border-radius:99px;
+    animation:loading-slide 1.1s ease-in-out infinite;
+  }
+  @keyframes loading-slide{
+    0%{ transform:translateX(-100%); }
+    100%{ transform:translateX(250%); }
   }
 
   /* 底部固定送出列 */
@@ -823,7 +842,8 @@ document.getElementById('reroll-btn').addEventListener('click', async ()=>{
       '<div class="empty-hint">尚未設定資料庫網址：請把程式碼最上面的 APPS_SCRIPT_URL 換成你部署 Apps Script 後拿到的 /exec 網址。</div>';
     return;
   }
-  document.getElementById('floors').innerHTML = '<div class="loading">載入中…</div>';
+  document.getElementById('floors').innerHTML =
+    '<div class="loading">載入中…<div class="loading-bar-track"><div class="loading-bar-fill"></div></div></div>';
   await loadAll();
   render();
 })();
