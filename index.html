@@ -544,32 +544,35 @@ let selectedBook = null;     // 目前選擇的書院
 
 async function loadAll(){
   tasksData = DEFAULT_TASKS;
-  inspectorData = await loadJSON('inspectors:'+MKEY, null);
+  const kv = await fetchDump(); // 一次抓回所有 key，避免每個 key 各打一次 API（Apps Script 每次請求都有延遲）
+
+  inspectorData = kv['inspectors:'+MKEY] ? JSON.parse(kv['inspectors:'+MKEY]) : null;
   if(!inspectorData){
     inspectorData = {};
     BOOKS.forEach(book=>{ inspectorData[book] = pick(ROSTER[book]); });
     await saveJSON('inspectors:'+MKEY, inspectorData);
   }
-  checklistData = await loadJSON('checklist:'+DKEY, {});
-  submissions = await loadJSON('submissions:'+DKEY, {});
+  checklistData = kv['checklist:'+DKEY] ? JSON.parse(kv['checklist:'+DKEY]) : {};
+  submissions = kv['submissions:'+DKEY] ? JSON.parse(kv['submissions:'+DKEY]) : {};
+}
+
+async function fetchDump(){
+  try{
+    const res = await fetch(APPS_SCRIPT_URL + '?action=dump');
+    const data = await res.json();
+    const map = {};
+    (data.rows || []).forEach(r=>{ map[r.key] = r.value; });
+    return map;
+  }catch(e){
+    console.error('dump error', e);
+    return {};
+  }
 }
 
 // 把這裡換成你部署 Apps Script 網頁應用程式後拿到的網址
 // 例如：https://script.google.com/macros/s/AKfycb.../exec
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPh4T_EH-xYxmMSNz4T-rShsQwbeEUA8EQ9NpGGig-j7YMCBn2StSJINVzycyOtXqj/exec';
+const APPS_SCRIPT_URL = 'PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE';
 
-async function loadJSON(key, fallback){
-  try{
-    const url = APPS_SCRIPT_URL + '?action=get&key=' + encodeURIComponent(key);
-    const res = await fetch(url);
-    const data = await res.json();
-    if(!data || data.value === null || data.value === undefined || data.value === '') return fallback;
-    return JSON.parse(data.value);
-  }catch(e){
-    console.error('load error', key, e);
-    return fallback;
-  }
-}
 async function saveJSON(key, obj){
   try{
     await fetch(APPS_SCRIPT_URL, {
