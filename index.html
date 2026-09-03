@@ -395,6 +395,26 @@
     color:var(--ink-soft);
     cursor:not-allowed;
   }
+  .submit-progress-track{
+    width:100%;
+    height:10px;
+    background:var(--line);
+    border-radius:99px;
+    overflow:hidden;
+  }
+  .submit-progress-fill{
+    width:0%;
+    height:100%;
+    background:var(--good);
+    border-radius:99px;
+    transition:width .2s ease-out;
+  }
+  .submit-progress-pct{
+    margin-top:8px;
+    font-size:12px;
+    color:var(--ink-soft);
+    font-variant-numeric:tabular-nums;
+  }
   .submitted-banner{
     max-width:520px;
     margin:0 auto;
@@ -780,28 +800,52 @@ function render(){
         const ok = confirm(`還有 ${totalTasks-passCount} 項尚未達到合格以上，確定要送出嗎？`);
         if(!ok) return;
       }
-      btn.disabled = true;
-      btn.textContent = '送出中…';
 
-      // 先抓伺服器上最新的整體打勾資料，只把「自己書院負責的項目」蓋上去，
-      // 避免蓋掉其他書院同時間送出的結果
-      const latestKV = await fetchDump();
-      const serverChecklist = latestKV['checklist:'+DKEY] ? JSON.parse(latestKV['checklist:'+DKEY]) : {};
-      floorsForBook(selectedBook).forEach(floor=>{
-        tasksData[floor].filter(item=>item.book===selectedBook).forEach(item=>{
-          const id = taskId(floor, item.label);
-          if(checklistData[id]) serverChecklist[id] = checklistData[id];
-          else delete serverChecklist[id];
+      const box = btn.closest('.submit-box');
+      box.innerHTML = `
+        <div class="hint">送出中，請稍候…</div>
+        <div class="submit-progress-track"><div class="submit-progress-fill" id="submit-progress-fill"></div></div>
+        <div class="submit-progress-pct" id="submit-progress-pct">0%</div>
+      `;
+      const fillEl = document.getElementById('submit-progress-fill');
+      const pctEl = document.getElementById('submit-progress-pct');
+
+      // 假進度條：不代表真實進度，只是讓等待有回饋。
+      // 用漸緩曲線一路爬到 90%，卡在那邊等真正的請求做完，最後才補到 100%。
+      let pct = 0;
+      const timer = setInterval(()=>{
+        pct += (90 - pct) * 0.12 + 0.6;
+        if(pct > 90) pct = 90;
+        fillEl.style.width = pct + '%';
+        pctEl.textContent = Math.round(pct) + '%';
+      }, 120);
+
+      try{
+        // 先抓伺服器上最新的整體打勾資料，只把「自己書院負責的項目」蓋上去，
+        // 避免蓋掉其他書院同時間送出的結果
+        const latestKV = await fetchDump();
+        const serverChecklist = latestKV['checklist:'+DKEY] ? JSON.parse(latestKV['checklist:'+DKEY]) : {};
+        floorsForBook(selectedBook).forEach(floor=>{
+          tasksData[floor].filter(item=>item.book===selectedBook).forEach(item=>{
+            const id = taskId(floor, item.label);
+            if(checklistData[id]) serverChecklist[id] = checklistData[id];
+            else delete serverChecklist[id];
+          });
         });
-      });
-      checklistData = serverChecklist;
-      await saveJSON('checklist:'+DKEY, checklistData);
+        checklistData = serverChecklist;
+        await saveJSON('checklist:'+DKEY, checklistData);
 
-      const latestSubs = latestKV['submissions:'+DKEY] ? JSON.parse(latestKV['submissions:'+DKEY]) : {};
-      latestSubs[selectedBook] = new Date().toISOString();
-      submissions = latestSubs;
-      await saveJSON('submissions:'+DKEY, submissions);
-      render();
+        const latestSubs = latestKV['submissions:'+DKEY] ? JSON.parse(latestKV['submissions:'+DKEY]) : {};
+        latestSubs[selectedBook] = new Date().toISOString();
+        submissions = latestSubs;
+        await saveJSON('submissions:'+DKEY, submissions);
+      } finally {
+        clearInterval(timer);
+        fillEl.style.width = '100%';
+        pctEl.textContent = '100%';
+      }
+
+      setTimeout(render, 250); // 讓 100% 有機會被看到，再切回正常畫面
     });
   }
 
