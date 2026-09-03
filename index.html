@@ -2,7 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>打掃工作分配表</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,37 +22,38 @@
     --warn:#b8860b;
     --bad:#b23b3b;
   }
-  *{box-sizing:border-box;}
-  body{
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{
     margin:0;
     background:var(--paper);
     color:var(--ink);
     font-family:'Inter',system-ui,sans-serif;
     -webkit-font-smoothing:antialiased;
   }
+  button{font-family:inherit;}
   .board{
-    max-width:640px;
+    max-width:520px;
     margin:0 auto;
-    padding:28px 18px 64px;
+    padding:20px 16px calc(120px + env(safe-area-inset-bottom));
   }
   .masthead{
     display:flex;
     align-items:baseline;
     justify-content:space-between;
     border-bottom:3px solid var(--ink);
-    padding-bottom:14px;
-    margin-bottom:16px;
+    padding-bottom:12px;
+    margin-bottom:14px;
   }
   .masthead h1{
     font-family:'Barlow Condensed',sans-serif;
     font-weight:700;
-    font-size:34px;
+    font-size:28px;
     letter-spacing:0.3px;
     margin:0;
     line-height:1;
   }
   .masthead .date{
-    font-size:13px;
+    font-size:12.5px;
     color:var(--ink-soft);
     font-variant-numeric:tabular-nums;
   }
@@ -60,9 +61,9 @@
   .who-box{
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:4px;
-    padding:14px 16px;
-    margin-bottom:20px;
+    border-radius:10px;
+    padding:14px;
+    margin-bottom:16px;
   }
   .who-box label{
     display:block;
@@ -70,86 +71,101 @@
     color:var(--ink-soft);
     margin-bottom:8px;
   }
-  .who-box select{
-    width:100%;
-    font-family:inherit;
-    font-size:15px;
-    padding:10px 12px;
-    border:1px solid var(--line);
-    border-radius:4px;
-    background:#fff;
-    color:var(--ink);
-  }
   .who-current{
     display:flex;
     align-items:center;
     justify-content:space-between;
     gap:10px;
   }
-  .who-current .info{font-size:14px;}
+  .who-current .info{font-size:13.5px;line-height:1.5;}
   .who-current .info b{font-weight:600;}
   .who-current .swap-btn{
     flex:none;
-    border:none;
-    background:none;
+    border:1px solid var(--line);
+    background:#fff;
     color:var(--ink-soft);
-    font-size:13px;
-    text-decoration:underline;
+    font-size:12.5px;
+    border-radius:99px;
+    padding:6px 12px;
     cursor:pointer;
-    padding:4px;
+  }
+
+  /* 自訂下拉觸發按鈕 */
+  .select-trigger{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    border:1.5px solid var(--line);
+    border-radius:10px;
+    background:#fff;
+    padding:12px 14px;
+    font-size:15px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .select-trigger.placeholder{color:var(--ink-soft);}
+  .trigger-arrow{
+    flex:none;
+    width:11px;height:11px;
+    border-right:2px solid var(--ink-soft);
+    border-bottom:2px solid var(--ink-soft);
+    transform:rotate(45deg);
+    margin-top:-4px;
   }
 
   .roster-strip{
     display:flex;
     flex-wrap:wrap;
-    gap:8px;
-    margin:0 0 22px;
+    gap:7px;
+    margin:0 0 18px;
   }
   .roster-chip{
     display:flex;
     align-items:center;
-    gap:7px;
+    gap:6px;
     background:var(--card);
     border:1px solid var(--line);
-    border-radius:3px;
-    padding:6px 10px 6px 8px;
-    font-size:13px;
+    border-radius:99px;
+    padding:5px 10px 5px 8px;
+    font-size:12px;
   }
   .swatch{
-    width:9px;height:9px;border-radius:2px;flex:none;
+    width:8px;height:8px;border-radius:2px;flex:none;
   }
   .roster-chip b{font-weight:600;}
   .roster-chip .who{color:var(--ink-soft);}
 
   .empty-hint{
-    padding:40px 18px;
+    padding:36px 16px;
     text-align:center;
     color:var(--ink-soft);
     font-size:14px;
     border:1px dashed var(--line);
-    border-radius:4px;
+    border-radius:10px;
   }
 
   .floor{
     border:1px solid var(--line);
     background:var(--card);
-    border-radius:4px;
-    margin-bottom:16px;
+    border-radius:10px;
+    margin-bottom:14px;
     overflow:hidden;
   }
   .floor-head{
     display:flex;
     align-items:center;
-    gap:16px;
-    padding:14px 16px;
+    gap:14px;
+    padding:13px 14px;
     border-bottom:1px solid var(--line);
   }
   .floor-num{
     font-family:'Barlow Condensed',sans-serif;
     font-weight:700;
-    font-size:40px;
+    font-size:34px;
     line-height:1;
-    width:56px;
+    width:48px;
     flex:none;
     color:var(--ink);
   }
@@ -159,14 +175,14 @@
     display:inline-flex;
     align-items:center;
     gap:5px;
-    font-size:12px;
+    font-size:11.5px;
     padding:2px 8px 2px 6px;
     border-radius:99px;
     color:#fff;
   }
   .book-tag .swatch{background:#fff;opacity:0.9;}
   .floor-meta .progress-line{
-    font-size:12.5px;
+    font-size:12px;
     color:var(--ink-soft);
   }
   .progress-line strong{color:var(--ink);font-weight:600;}
@@ -182,45 +198,105 @@
   }
 
   .task-list{
-    padding:6px 16px 14px;
+    padding:4px 12px 12px;
   }
   .task-row{
     display:flex;
-    align-items:center;
-    gap:12px;
-    padding:11px 10px;
+    flex-direction:column;
+    gap:8px;
+    padding:11px 8px;
     border-bottom:1px solid var(--line);
-    border-radius:3px;
+    border-radius:6px;
   }
   .task-row:last-of-type{border-bottom:none;}
   .task-row .label{
-    flex:1;
-    font-size:15px;
+    font-size:14.5px;
   }
   .task-row.level-1{background:rgba(47,143,91,0.08);}
   .task-row.level-2{background:rgba(184,134,11,0.09);}
   .task-row.level-3{background:rgba(178,59,59,0.10);}
 
-  .rate-select{
-    flex:none;
-    width:180px;
-    font-family:inherit;
-    font-size:13px;
-    padding:8px 8px;
-    border:1px solid var(--line);
-    border-radius:4px;
+  .rate-trigger{
+    align-self:flex-start;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    border:1.5px solid var(--line);
+    border-radius:99px;
     background:#fff;
-    color:var(--ink);
+    color:var(--ink-soft);
+    font-size:13px;
+    font-weight:500;
+    padding:8px 12px;
+    cursor:pointer;
   }
-  .task-row.level-1 .rate-select{border-color:var(--good);color:var(--good);}
-  .task-row.level-2 .rate-select{border-color:var(--warn);color:var(--warn);}
-  .task-row.level-3 .rate-select{border-color:var(--bad);color:var(--bad);}
-  .rate-select:disabled{opacity:.6;}
+  .rate-trigger .trigger-arrow{
+    border-color:currentColor;
+    opacity:.7;
+  }
+  .task-row.level-1 .rate-trigger{border-color:var(--good);color:var(--good);background:rgba(47,143,91,0.08);}
+  .task-row.level-2 .rate-trigger{border-color:var(--warn);color:var(--warn);background:rgba(184,134,11,0.09);}
+  .task-row.level-3 .rate-trigger{border-color:var(--bad);color:var(--bad);background:rgba(178,59,59,0.10);}
+  .rate-trigger:disabled{opacity:.6;cursor:default;}
+
+  /* Bottom sheet */
+  .sheet-backdrop{
+    position:fixed;inset:0;
+    background:rgba(20,20,16,0.4);
+    opacity:0;pointer-events:none;
+    transition:opacity .18s ease;
+    z-index:90;
+  }
+  .sheet-backdrop.show{opacity:1;pointer-events:auto;}
+  .sheet{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    background:#fff;
+    border-radius:16px 16px 0 0;
+    box-shadow:0 -10px 30px rgba(0,0,0,.18);
+    transform:translateY(100%);
+    transition:transform .22s cubic-bezier(.2,.8,.3,1);
+    z-index:100;
+    max-height:72vh;
+    overflow-y:auto;
+    padding:10px 6px calc(14px + env(safe-area-inset-bottom));
+  }
+  .sheet.show{transform:translateY(0);}
+  .sheet-handle{
+    width:36px;height:4px;
+    background:var(--line);
+    border-radius:99px;
+    margin:4px auto 12px;
+  }
+  .sheet-title{
+    font-size:13px;
+    color:var(--ink-soft);
+    padding:0 12px 8px;
+  }
+  .sheet-options{padding:0 6px;}
+  .sheet-option{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:none;
+    border:none;
+    border-bottom:1px solid var(--line);
+    text-align:left;
+    padding:14px 10px;
+    font-size:15.5px;
+    color:var(--ink);
+    cursor:pointer;
+  }
+  .sheet-option:last-child{border-bottom:none;}
+  .sheet-option.active{font-weight:600;color:var(--good);}
+  .sheet-option .check-mark{color:var(--good);font-weight:700;}
 
   details.admin{
-    margin-top:26px;
+    margin-top:22px;
     border-top:1px solid var(--line);
-    padding-top:14px;
+    padding-top:12px;
   }
   details.admin summary{
     cursor:pointer;
@@ -241,10 +317,9 @@
     border:1px solid var(--ink-soft);
     background:#fff;
     color:var(--ink);
-    border-radius:4px;
+    border-radius:99px;
     padding:7px 12px;
-    font-size:13px;
-    font-family:inherit;
+    font-size:12.5px;
     cursor:pointer;
   }
   .admin-row{
@@ -257,32 +332,40 @@
   }
   .admin-row:last-child{border-bottom:none;}
   .loading{
-    padding:60px 0;
+    padding:50px 0;
     text-align:center;
     color:var(--ink-soft);
     font-size:14px;
   }
 
+  /* 底部固定送出列 */
+  #submit-area{
+    position:fixed;
+    left:0;right:0;bottom:0;
+    padding:10px 16px calc(14px + env(safe-area-inset-bottom));
+    z-index:40;
+  }
   .submit-box{
-    margin-top:10px;
-    padding:18px 16px;
+    max-width:520px;
+    margin:0 auto;
+    padding:14px 14px;
     border:1px solid var(--line);
-    background:var(--card);
-    border-radius:4px;
+    background:#fff;
+    border-radius:12px;
+    box-shadow:0 -4px 18px rgba(0,0,0,.10);
     text-align:center;
   }
   .submit-box .hint{
-    font-size:13px;
+    font-size:12.5px;
     color:var(--ink-soft);
     margin-bottom:10px;
   }
   .submit-btn{
     width:100%;
     border:none;
-    border-radius:4px;
+    border-radius:10px;
     padding:14px;
     font-size:16px;
-    font-family:'Inter',sans-serif;
     font-weight:600;
     cursor:pointer;
     background:var(--ink);
@@ -294,16 +377,19 @@
     cursor:not-allowed;
   }
   .submitted-banner{
+    max-width:520px;
+    margin:0 auto;
     display:flex;
     align-items:center;
     justify-content:center;
     gap:8px;
     padding:14px;
-    border-radius:4px;
+    border-radius:12px;
     background:#e5f2ea;
     color:var(--good);
     font-weight:600;
-    font-size:15px;
+    font-size:14.5px;
+    box-shadow:0 -4px 18px rgba(0,0,0,.10);
   }
 </style>
 </head>
@@ -317,14 +403,11 @@
   <div class="who-box" id="who-box"></div>
   <div class="roster-strip" id="roster-strip"></div>
   <div id="floors"></div>
-  <div id="submit-area"></div>
 
   <details class="admin">
     <summary>管理設定</summary>
     <div class="admin-body">
-
       本月清潔工由系統於每月 1 號自動依書院成員重新抽選；打勾狀態每日自動重置。
-
       <div>
         PS. 此網頁為範例網頁，若成功當選，將更新整體功能，並建立雲端空間。
       <div>
@@ -332,15 +415,23 @@
       </div>  
       </div>
       <div>
-            靛織書院全體
+            靛織書院全體<br>
       </div>
-      
       <div>
         <button id="reroll-btn" type="button">重新抽選本月清潔工</button>
       </div>
       <div id="admin-submissions"></div>
     </div>
   </details>
+</div>
+
+<div id="submit-area"></div>
+
+<div class="sheet-backdrop" id="sheet-backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-title" id="sheet-title"></div>
+  <div class="sheet-options" id="sheet-options"></div>
 </div>
 
 <script>
@@ -430,6 +521,8 @@ const RATINGS = [
   { v:'2', label:'2・有一點灰塵，但大致清掃' },
   { v:'3', label:'3・不合格' }
 ];
+const RATING_LABEL = {};
+RATINGS.forEach(r=>RATING_LABEL[r.v]=r.label);
 
 // 全校 82 人範例名冊（依書院分組，之後可替換成真實名單）
 function buildRoster(){
@@ -459,7 +552,7 @@ let submissions = null;      // {book: isoString}
 let selectedBook = null;     // 目前選擇的書院
 
 async function loadAll(){
-  tasksData = DEFAULT_TASKS; // 打掃項目固定，不再由使用者新增/刪除
+  tasksData = DEFAULT_TASKS;
   inspectorData = await loadJSON('inspectors:'+MKEY, null);
   if(!inspectorData){
     inspectorData = {};
@@ -487,32 +580,58 @@ async function saveJSON(key, obj){
 }
 
 function taskId(floor, label){ return floor + '||' + label; }
-
 function floorsForBook(book){
   return FLOOR_ORDER.filter(floor => tasksData[floor].some(item=>item.book===book));
 }
 
+/* ---------- Bottom sheet (自訂下拉選單) ---------- */
+const sheetBackdrop = document.getElementById('sheet-backdrop');
+const sheetEl = document.getElementById('sheet');
+function openSheet(title, options, current, onPick){
+  document.getElementById('sheet-title').textContent = title;
+  const wrap = document.getElementById('sheet-options');
+  wrap.innerHTML = options.map(o=>`
+    <button class="sheet-option ${o.value===current?'active':''}" data-value="${o.value}" type="button">
+      <span>${o.label}</span>
+      ${o.value===current?'<span class="check-mark">✓</span>':''}
+    </button>`).join('');
+  wrap.querySelectorAll('.sheet-option').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      closeSheet();
+      onPick(btn.dataset.value);
+    });
+  });
+  sheetBackdrop.classList.add('show');
+  sheetEl.classList.add('show');
+}
+function closeSheet(){
+  sheetBackdrop.classList.remove('show');
+  sheetEl.classList.remove('show');
+}
+sheetBackdrop.addEventListener('click', closeSheet);
+
+/* ---------- 渲染 ---------- */
 function renderWhoBox(){
   const el = document.getElementById('who-box');
   if(!selectedBook){
     el.innerHTML = `
-      <label for="book-select">請問您的書院為何？</label>
-      <select id="book-select">
-        <option value="">請選擇書院</option>
-        ${BOOKS.map(b=>`<option value="${b}">${b}</option>`).join('')}
-      </select>
+      <label>請問您的書院為何？</label>
+      <button class="select-trigger placeholder" id="book-trigger" type="button">
+        <span>請選擇書院</span>
+        <span class="trigger-arrow"></span>
+      </button>
     `;
-    document.getElementById('book-select').addEventListener('change', (e)=>{
-      if(e.target.value){
-        selectedBook = e.target.value;
+    document.getElementById('book-trigger').addEventListener('click', ()=>{
+      openSheet('請選擇書院', BOOKS.map(b=>({value:b,label:b})), selectedBook, (val)=>{
+        selectedBook = val;
         render();
-      }
+      });
     });
   }else{
     const floors = floorsForBook(selectedBook).join('、');
     el.innerHTML = `
       <div class="who-current">
-        <div class="info">您的書院：<b>${selectedBook}</b>（負責 ${floors}）・本月清潔工：${inspectorData[selectedBook]}</div>
+        <div class="info">您的書院：<b>${selectedBook}</b>（負責 ${floors}）<br>本月清潔工：${inspectorData[selectedBook]}</div>
         <button class="swap-btn" id="swap-book-btn" type="button">更換書院</button>
       </div>
     `;
@@ -529,7 +648,6 @@ function render(){
 
   renderWhoBox();
 
-  // 本月清潔工總覽
   const stripEl = document.getElementById('roster-strip');
   stripEl.innerHTML = '';
   BOOKS.forEach(book=>{
@@ -582,12 +700,13 @@ function render(){
         ${items.map(item=>{
           const v = checklistData[taskId(floor,item.label)] || '';
           const levelClass = v ? 'level-'+v : '';
+          const triggerLabel = v ? RATING_LABEL[v] : '尚未檢查';
           return `<div class="task-row ${levelClass}" data-floor="${floor}" data-label="${item.label}">
             <div class="label">${item.label}</div>
-            <select class="rate-select" ${alreadySubmitted?'disabled':''}>
-              <option value="" ${v===''?'selected':''}>尚未檢查</option>
-              ${RATINGS.map(r=>`<option value="${r.v}" ${v===r.v?'selected':''}>${r.label}</option>`).join('')}
-            </select>
+            <button class="rate-trigger" type="button" ${alreadySubmitted?'disabled':''}>
+              <span>${triggerLabel}</span>
+              <span class="trigger-arrow"></span>
+            </button>
           </div>`;
         }).join('')}
       </div>
@@ -595,19 +714,23 @@ function render(){
     floorsEl.appendChild(card);
   });
 
-  // 下拉選單變更事件
+  // 評分按鈕：開啟底部選單
   floorsEl.querySelectorAll('.task-row').forEach(row=>{
-    row.querySelector('.rate-select').addEventListener('change', async (e)=>{
+    const btn = row.querySelector('.rate-trigger');
+    if(btn.disabled) return;
+    btn.addEventListener('click', ()=>{
       const floor = row.dataset.floor, label = row.dataset.label;
       const id = taskId(floor, label);
-      const val = e.target.value;
-      if(val){ checklistData[id] = val; } else { delete checklistData[id]; }
-      await saveJSON('checklist:'+DKEY, checklistData);
-      render();
+      const current = checklistData[id] || '';
+      const options = [{value:'',label:'尚未檢查'}, ...RATINGS];
+      openSheet(label, options, current, async (val)=>{
+        if(val){ checklistData[id] = val; } else { delete checklistData[id]; }
+        await saveJSON('checklist:'+DKEY, checklistData);
+        render();
+      });
     });
   });
 
-  // 繳交區塊
   const allDone = totalTasks > 0 && passCount === totalTasks;
   if(alreadySubmitted){
     const t = new Date(submissions[selectedBook]);
