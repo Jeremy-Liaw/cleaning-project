@@ -243,6 +243,49 @@
     color:var(--ink-soft);
     font-size:14px;
   }
+
+  .submit-box{
+    margin-top:10px;
+    padding:18px 16px;
+    border:1px solid var(--line);
+    background:var(--card);
+    border-radius:4px;
+    text-align:center;
+  }
+  .submit-box .hint{
+    font-size:13px;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+  .submit-btn{
+    width:100%;
+    border:none;
+    border-radius:4px;
+    padding:14px;
+    font-size:16px;
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    cursor:pointer;
+    background:var(--ink);
+    color:#fff;
+  }
+  .submit-btn:disabled{
+    background:var(--line);
+    color:var(--ink-soft);
+    cursor:not-allowed;
+  }
+  .submitted-banner{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding:14px;
+    border-radius:4px;
+    background:#e5f2ea;
+    color:var(--good);
+    font-weight:600;
+    font-size:15px;
+  }
 </style>
 </head>
 <body>
@@ -253,13 +296,19 @@
   </div>
   <div class="roster-strip" id="roster-strip"></div>
   <div id="floors"></div>
+  <div id="submit-area"></div>
 
   <details class="admin">
     <summary>管理設定</summary>
     <div class="admin-body">
       本月清潔工由系統於每月 1 號自動依書院成員重新抽選；打勾狀態每日自動重置。
+      PS. 此網頁為範例網頁，若成功當選，將更新整體功能，並建立雲端空間。
+          目前無法做到後台控制，敬請見諒
+      
+      靛織書院全體
       <div>
         <button id="reroll-btn" type="button">重新抽選本月清潔工</button>
+        <button id="unsubmit-btn" type="button" style="display:none;">撤銷今日送出</button>
       </div>
     </div>
   </details>
@@ -376,6 +425,7 @@ const DKEY = dateKey(now);
 let tasksData = null;      // {floor: [taskName,...]}
 let inspectorData = null;  // {book: name}
 let checklistData = null;  // {"floor||task": true}
+let submissionData = null; // {at: isoString} | null
 const openFloors = { '1F': true, '2F': false, '3F': false };
 
 async function loadAll(){
@@ -387,6 +437,7 @@ async function loadAll(){
     await saveJSON('inspectors:'+MKEY, inspectorData);
   }
   checklistData = await loadJSON('checklist:'+DKEY, {});
+  submissionData = await loadJSON('submission:'+DKEY, null);
 }
 
 async function loadJSON(key, fallback){
@@ -425,11 +476,15 @@ function render(){
   const floorsEl = document.getElementById('floors');
   floorsEl.innerHTML = '';
 
+  let totalTasks = 0, totalDone = 0;
+
   FLOOR_ORDER.forEach((floor, idx)=>{
     const books = FLOOR_BOOKS[floor] || [];
     const tasks = tasksData[floor] || [];
     const doneCount = tasks.filter(t => checklistData[taskId(floor,t)]).length;
     const pct = tasks.length ? Math.round(doneCount/tasks.length*100) : 0;
+    totalTasks += tasks.length;
+    totalDone += doneCount;
 
     const card = document.createElement('div');
     card.className = 'floor' + (openFloors[floor] ? ' open' : '');
@@ -453,7 +508,7 @@ function render(){
         ${tasks.map(t=>{
           const done = !!checklistData[taskId(floor,t)];
           return `<div class="task-row ${done?'done':''}" data-floor="${floor}" data-task="${t}">
-            <div class="check ${done?'checked':''}">
+            <div class="check ${done?'checked':''}" style="${submissionData?'opacity:.55;cursor:default;':''}">
               <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.5 12L13 4" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
             <div class="label">${t}</div>
@@ -474,6 +529,7 @@ function render(){
   floorsEl.querySelectorAll('.task-row').forEach(row=>{
     row.querySelector('.check').addEventListener('click', async (e)=>{
       e.stopPropagation();
+      if(submissionData) return; // 今日已送出，鎖定不可再改
       const floor = row.dataset.floor, task = row.dataset.task;
       const id = taskId(floor, task);
       checklistData[id] = !checklistData[id];
@@ -482,12 +538,41 @@ function render(){
     });
   });
 
+  // 繳交區塊
+  const submitEl = document.getElementById('submit-area');
+  const allDone = totalTasks > 0 && totalDone === totalTasks;
+  if(submissionData){
+    const t = new Date(submissionData.at);
+    submitEl.innerHTML = `<div class="submitted-banner">✓ 今日打掃已於 ${pad(t.getHours())}:${pad(t.getMinutes())} 送出</div>`;
+  }else{
+    submitEl.innerHTML = `
+      <div class="submit-box">
+        <div class="hint">${allDone ? '全部項目已完成，可以送出今日結果' : `還有 ${totalTasks-totalDone} 項未完成才能送出`}</div>
+        <button class="submit-btn" id="submit-btn" ${allDone?'':'disabled'}>送出今日結果</button>
+      </div>`;
+    const btn = document.getElementById('submit-btn');
+    if(btn){
+      btn.addEventListener('click', async ()=>{
+        submissionData = { at: new Date().toISOString() };
+        await saveJSON('submission:'+DKEY, submissionData);
+        render();
+      });
+    }
+  }
+  document.getElementById('unsubmit-btn').style.display = submissionData ? 'inline-block' : 'none';
 }
 
 document.getElementById('reroll-btn').addEventListener('click', async ()=>{
   if(!confirm('確定要重新抽選本月清潔工嗎？這會覆蓋目前的名單。')) return;
   BOOKS.forEach(book=>{ inspectorData[book] = pick(ROSTER[book]); });
   await saveJSON('inspectors:'+MKEY, inspectorData);
+  render();
+});
+
+document.getElementById('unsubmit-btn').addEventListener('click', async ()=>{
+  if(!confirm('確定要撤銷今日的送出紀錄嗎？')) return;
+  submissionData = null;
+  await saveJSON('submission:'+DKEY, null);
   render();
 });
 
