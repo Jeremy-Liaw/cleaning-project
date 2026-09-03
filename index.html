@@ -406,17 +406,8 @@
 
   <details class="admin">
     <summary>管理設定</summary>
-    <div class="admin-body">
-      本月清潔工由系統於每月 1 號自動依書院成員重新抽選；打勾狀態每日自動重置。
-      <div>
-        PS. 此網頁為範例網頁，若成功當選，將更新整體功能，並建立雲端空間。
-      <div>
-        目前無法做到後台控制，敬請見諒。<br><br>
-      </div>  
-      </div>
-      <div>
-            靛織書院全體<br>
-      </div>
+    <div class="admin-body" id="admin-body">
+      本月清潔工由系統於每月 1 號自動依書院成員重新抽選；每日的檢查結果每天自動重置。
       <div>
         <button id="reroll-btn" type="button">重新抽選本月清潔工</button>
       </div>
@@ -563,19 +554,33 @@ async function loadAll(){
   submissions = await loadJSON('submissions:'+DKEY, {});
 }
 
+// 把這裡換成你部署 Apps Script 網頁應用程式後拿到的網址
+// 例如：https://script.google.com/macros/s/AKfycb.../exec
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzPh4T_EH-xYxmMSNz4T-rShsQwbeEUA8EQ9NpGGig-j7YMCBn2StSJINVzycyOtXqj/exec';
+
 async function loadJSON(key, fallback){
   try{
-    const res = await window.storage.get(key, true);
-    return res ? JSON.parse(res.value) : fallback;
+    const url = APPS_SCRIPT_URL + '?action=get&key=' + encodeURIComponent(key);
+    const res = await fetch(url);
+    const data = await res.json();
+    if(!data || data.value === null || data.value === undefined || data.value === '') return fallback;
+    return JSON.parse(data.value);
   }catch(e){
+    console.error('load error', key, e);
     return fallback;
   }
 }
 async function saveJSON(key, obj){
   try{
-    await window.storage.set(key, JSON.stringify(obj), true);
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      // 用 text/plain 避免瀏覽器對 Apps Script 發出 CORS 預檢請求（OPTIONS），
+      // Apps Script 的 doPost 還是能正常用 JSON.parse 解析內容。
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action:'set', key: key, value: JSON.stringify(obj) })
+    });
   }catch(e){
-    console.error('storage error', key, e);
+    console.error('save error', key, e);
   }
 }
 
@@ -783,6 +788,11 @@ document.getElementById('reroll-btn').addEventListener('click', async ()=>{
 });
 
 (async function init(){
+  if(APPS_SCRIPT_URL.indexOf('PASTE_YOUR') === 0){
+    document.getElementById('floors').innerHTML =
+      '<div class="empty-hint">尚未設定資料庫網址：請把程式碼最上面的 APPS_SCRIPT_URL 換成你部署 Apps Script 後拿到的 /exec 網址。</div>';
+    return;
+  }
   document.getElementById('floors').innerHTML = '<div class="loading">載入中…</div>';
   await loadAll();
   render();
